@@ -13,6 +13,7 @@ import (
 	"flag"
 	"fmt"
 	l "github.com/cu-library/signtwo/loglevel"
+	db "github.com/cu-library/signtwo/db"
 	"log"
 	"os"
 	"strings"
@@ -27,11 +28,12 @@ const (
 )
 
 var (
-	address  = flag.String("address", DefaultAddress, "Address the server will bind on.")
-	logLevel = flag.String("loglevel", "WARN", "The maximum log level which will be logged.\n"+
+	address  = 	flag.String("address", DefaultAddress, "Address the server will bind on.")
+	logLevel = 	flag.String("loglevel", "WARN", "The maximum log level which will be logged.\n"+
 		"        ERROR < WARN < INFO < DEBUG < TRACE\n"+
 		"        For example, TRACE will log everything,\n"+
 		"        INFO will log INFO, WARN, and ERROR messages.")
+	databaseURL = flag.String("dburl", "", "Database URL, eg: postgres://pqgotest:password@localhost/pqgotest?sslmode=verify-full")
 )
 
 func init() {
@@ -53,6 +55,14 @@ func main() {
 	overrideUnsetFlagsFromEnvironmentVariables()
 
 	l.Log("Starting Signtwo", l.InfoMessage)
+	if *databaseURL == "" {
+		log.Fatal("FATAL: A database url is required.")
+	} 
+
+	err := db.Connect(*databaseURL)
+	if err != nil {
+		log.Fatal("FATAL: Could not connect to a database using the provided database url.")
+	}
 }
 
 func overrideUnsetFlagsFromEnvironmentVariables() {
