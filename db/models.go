@@ -13,9 +13,17 @@ type Agreement struct {
 	ID int64
 	Title string
 	Description string
-	Slug string
 	Created time.Time
 	Enabled bool
+}
+
+func NewAgreement(title, description string) *Agreement {
+	// Create the agreement. 
+	// The creation time is set to now, and the agreement is enabled by default.
+	return &Agreement{Title: title, 
+		              Description: description, 
+		              Created: time.Now(),
+		              Enabled: true}
 }
 
 type Owner struct {

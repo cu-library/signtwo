@@ -9,6 +9,12 @@ file access.
 */
 package main
 
+/*
+	// Create a new slug by lowercasing/ascii-ing the title
+	var slugre = regexp.MustCompile("[^a-z0-9]+")
+	slug := strings.Trim(slugre.ReplaceAllString(strings.ToLower(title), "-"), "-")
+	*/
+
 import (
 	"flag"
 	"fmt"
@@ -33,7 +39,7 @@ var (
 		"        ERROR < WARN < INFO < DEBUG < TRACE\n"+
 		"        For example, TRACE will log everything,\n"+
 		"        INFO will log INFO, WARN, and ERROR messages.")
-	databaseURL = flag.String("dburl", "", "Database URL, eg: postgres://pqgotest:password@localhost/pqgotest?sslmode=verify-full")
+	databaseURL = flag.String("dburl", "", "Database URL, eg: postgres://username:password@localhost/databasename")
 )
 
 func init() {
@@ -59,10 +65,20 @@ func main() {
 		log.Fatal("FATAL: A database url is required.")
 	} 
 
+	l.Log(*databaseURL, l.InfoMessage)
+
 	err := db.Connect(*databaseURL)
+	defer db.Close()
 	if err != nil {
 		log.Fatal("FATAL: Could not connect to a database using the provided database url.")
 	}
+
+	agreementID, err := db.NewAgreement("title2", "desc2").Store()
+	if err != nil {
+		l.Log(err, l.ErrorMessage)
+	}
+
+    l.Log(agreementID, l.InfoMessage)
 }
 
 func overrideUnsetFlagsFromEnvironmentVariables() {
