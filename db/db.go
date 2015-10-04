@@ -9,21 +9,66 @@ package db
 import (
 	"database/sql"
 	_ "github.com/lib/pq"
+	"errors"
+	l "github.com/cu-library/signtwo/loglevel"
+	"fmt"
 )
 
 var db *sql.DB
 
 func Connect(databaseURL string) error {
+
+	l.Log("Connecting to database...", l.InfoMessage)
+
+	// This err ensures the db variable refers to the global one
 	var err error
 	db, err = sql.Open("postgres", databaseURL)
 	if err != nil {
 		return err
 	}
-	return nil
+
+	// Can we access the database?
+	err = db.Ping()
+	if err != nil {
+		return  err
+	}
+
+	// Check to see that the database has all the tables we need.
+	
+	rows, err := db.Query("SELECT table_name " +
+                          "FROM information_schema.tables " +
+                          "WHERE table_schema = 'webapp'; ")
+	if err != nil {
+	    return err
+    }
+    defer rows.Close()
+
+    // Go doesn't have sets, per se. Fake with map.
+    requiredTables := map[string]bool{"agreement":true, "owner":true, "agreement_text":true, "signature":true}
+
+    for rows.Next() {
+    	var tableName string
+		err := rows.Scan(&tableName)
+		if err != nil {
+			return err
+		}
+		l.Log(fmt.Sprintf("Found table %v", tableName), l.TraceMessage)
+		delete(requiredTables, tableName)	
+	}
+
+	if len(requiredTables) != 0{
+		return errors.New("Unable to find all required tables in database, "+ 
+			              "please check the database creation documentation.")
+	}
+
+	l.Log("Successful database connection.", l.InfoMessage)
+	return nil	
 }
 
 func Close() {
+	l.Log("Closing database connection...", l.TraceMessage)
 	db.Close()
+	l.Log("Successfully closed database connection.", l.TraceMessage)
 }
 
 func (agreement *Agreement) Store() (int64, error) {

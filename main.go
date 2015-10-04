@@ -71,6 +71,8 @@ func main() {
 	overrideUnsetFlagsFromEnvironmentVariables()
 
 	l.Log("Starting Signtwo", l.InfoMessage)
+	defer l.Log("Exiting, goodbye!", l.InfoMessage)
+	
 	if *databaseURL == "" {
 		log.Fatal("FATAL: A database url is required.")
 	}
@@ -83,22 +85,20 @@ func main() {
 	if *ldapBindPassword == "" {
 		log.Fatal("FATAL: An LDAP service account password is required.")
 	}
-
-	l.Log("Connecting to database...", l.InfoMessage)
+	
 	err = db.Connect(*databaseURL)
 	if err != nil {
 		log.Fatalf("FATAL: Could not connect to a database using the provided database url: %v", err)
 	}
 	defer db.Close()
-	l.Log("Successful database connection.", l.InfoMessage)
-
-	l.Log("Connecting to LDAP...", l.InfoMessage)
+	
 	err = ldap.Connect(*ldapServer, *ldapPort, *ldapBindUsername, *ldapBindPassword, parsedLogLevel)
 	if err != nil {
 		log.Fatalf("FATAL: Could not connect and bind to LDAP using the provided information: %v", err)
 	}
-	defer ldap.Close()
-	l.Log("Successful LDAP connection and BIND", l.InfoMessage)
+	defer ldap.Close()	
+
+
 
 }
 
