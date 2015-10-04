@@ -27,7 +27,7 @@ import (
 )
 
 const (
-	//The prefix for all the curator environment variables
+	//The prefix for all the environment variables
 	EnvPrefix string = "SIGNTWO_"
 
 	//The default address to serve from
