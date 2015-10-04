@@ -24,6 +24,9 @@ import (
 	"log"
 	"os"
 	"strings"
+	"html/template"
+	"net/http"
+	"github.com/oxtoacart/bpool"
 )
 
 const (
@@ -45,6 +48,11 @@ var (
 	ldapPort         = flag.Int("ldapport", 636, "The LDAP server port.")
 	ldapBindUsername = flag.String("ldapuser", "", "The username for the service account LDAP will use for the initial bind.")
 	ldapBindPassword = flag.String("ldappass", "", "The password for the service account LDAP will use for the initial bind.")
+
+	baseTemplate = template.Must(template.ParseFiles("templates/base.tmpl"))
+	homeTemplate = template.Must(template.Must(baseTemplate.Clone()).ParseFiles("templates/home.tmpl"))
+
+	bufferPool = bpool.NewSizedBufferPool(128, 100000)
 )
 
 func init() {
@@ -98,9 +106,44 @@ func main() {
 	}
 	defer ldap.Close()	
 
-
-
+	http.HandleFunc("/", homeHandler)
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+	log.Fatalf("FATAL: %v", http.ListenAndServe(*address, nil))
+	
 }
+
+func homeHandler(w http.ResponseWriter, r *http.Request) {		
+	if r.URL.Path != "/" {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprint(w, "<html><head></head><body><pre>404 - Not Found</pre></body></html>")
+		l.Log("404 Handler visited.", l.TraceMessage)
+		return
+	}
+
+	l.Log("Home Handler visited.", l.TraceMessage)	
+	renderTemplateOr500(w, homeTemplate, nil)
+}
+
+func renderTemplateOr500(w http.ResponseWriter, tmpl *template.Template, data map[string]interface{}) {
+    // Create a buffer to temporarily write to and check if any errors were encounted.
+    buf := bufferPool.Get()
+    defer bufferPool.Put(buf)
+
+    err := tmpl.Execute(buf, data)
+    if err != nil {
+        w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, "<html><head></head><body><pre>500 - Template Error</pre></body></html>")
+		l.Log("500!", l.ErrorMessage)
+		return
+    }
+
+    // Set the header and write the buffer to the http.ResponseWriter
+    w.Header().Set("Content-Type", "text/html; charset=utf-8")
+    buf.WriteTo(w)
+}
+
 
 func overrideUnsetFlagsFromEnvironmentVariables() {
 	listOfUnsetFlags := make(map[*flag.Flag]bool)
