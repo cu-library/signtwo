@@ -1,4 +1,4 @@
-// Copyright 2015 Kevin Bowrin All rights reserved.
+// Copyright 2015 Carleton University Library All rights reserved.
 // Use of this source code is governed by the MIT
 // license that can be found in the LICENSE file.
 
@@ -43,13 +43,17 @@ func TestLogLevelParse(t *testing.T) {
 	}
 
 	for parseString, logLevel := range stringToLogLevel {
-		if level := ParseLogLevel(parseString); level != logLevel {
+		if level, _ := ParseLogLevel(parseString); level != logLevel {
 			t.Errorf("Unable to parse log level string %v properly", parseString)
 		}
 	}
 
-	if level := ParseLogLevel("blahblahblah"); level != TraceMessage {
+	level, err := ParseLogLevel("blahblahblah")
+	if level != TraceMessage {
 		t.Error("Default case for string to log level broken.")
+	}
+	if err == nil {
+		t.Error("ParseLogLevel doesn't return error on bad input.")
 	}
 
 }

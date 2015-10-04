@@ -1,4 +1,4 @@
-// Copyright 2015 Kevin Bowrin All rights reserved.
+// Copyright 2015 Carleton University Library All rights reserved.
 // Use of this source code is governed by the MIT
 // license that can be found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 package loglevel
 
 import (
+	"fmt"
 	"log"
 	"strings"
 	"sync"
@@ -54,12 +55,12 @@ func (level LogLevel) String() string {
 	return logLevelToString[level]
 }
 
-func ParseLogLevel(parseThis string) LogLevel {
+func ParseLogLevel(parseThis string) (LogLevel, error) {
 	for logLevel, logLevelString := range logLevelToString {
 		if logLevelString == strings.ToUpper(parseThis) {
-			return logLevel
+			return logLevel, nil
 		}
 
 	}
-	return TraceMessage
+	return TraceMessage, fmt.Errorf("Unknown log level '%v', defaulting to TRACE.", parseThis)
 }
