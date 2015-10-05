@@ -74,7 +74,7 @@ func TestLogFormatting(t *testing.T) {
 		Set(level)
 		b := new(bytes.Buffer)
 		log.SetOutput(b)
-		Log(testMessage, level)
+		Log(level, testMessage)
 		if !strings.HasSuffix(b.String(), fmt.Sprintf("%v: %v\n", level, testMessage)) {
 			t.Errorf("The log level %v logged the wrong message.", level)
 		}
@@ -104,7 +104,7 @@ func TestLogLevel(t *testing.T) {
 		Set(level)
 		for _, messageLevel := range logLevels {
 			log.SetOutput(b)
-			Log("x", messageLevel)
+			Log(messageLevel, "x")
 		}
 		if len(strings.Split(b.String(), "\n")) != logLevelToExpectedLength[level] {
 			t.Logf("%#v", strings.Split(b.String(), "\n"))

@@ -42,13 +42,17 @@ func Set(level LogLevel) {
 }
 
 //Log a message if the level is below or equal to the set LogMessageLevel
-func Log(message interface{}, messagelevel LogLevel) {
+func Log(messagelevel LogLevel, message interface{}) {
 	logMessageLevelMutex.RLock()
 	defer logMessageLevelMutex.RUnlock()
 
 	if messagelevel <= logMessageLevel {
 		log.Printf("%v: %v\n", messagelevel, message)
 	}
+}
+
+func Logf(messagelevel LogLevel, format string, a ...interface{}) {
+	Log(messagelevel, fmt.Sprintf(format, a), )
 }
 
 func (level LogLevel) String() string {

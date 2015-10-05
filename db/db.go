@@ -11,14 +11,13 @@ import (
 	_ "github.com/lib/pq"
 	"errors"
 	l "github.com/cu-library/signtwo/loglevel"
-	"fmt"
 )
 
 var db *sql.DB
 
 func Connect(databaseURL string) error {
 
-	l.Log("Connecting to database...", l.InfoMessage)
+	l.Log(l.InfoMessage, "Connecting to database...")
 
 	// This err ensures the db variable refers to the global one
 	var err error
@@ -52,7 +51,7 @@ func Connect(databaseURL string) error {
 		if err != nil {
 			return err
 		}
-		l.Log(fmt.Sprintf("Found table %v", tableName), l.TraceMessage)
+		l.Logf(l.TraceMessage, "Found table %v", tableName)
 		delete(requiredTables, tableName)	
 	}
 
@@ -61,14 +60,14 @@ func Connect(databaseURL string) error {
 			              "please check the database creation documentation.")
 	}
 
-	l.Log("Successful database connection.", l.InfoMessage)
+	l.Log(l.InfoMessage, "Successful database connection.")
 	return nil	
 }
 
 func Close() {
-	l.Log("Closing database connection...", l.TraceMessage)
+	l.Log(l.TraceMessage, "Closing database connection...")
 	db.Close()
-	l.Log("Successfully closed database connection.", l.TraceMessage)
+	l.Log(l.TraceMessage, "Successfully closed database connection.")
 }
 
 func (agreement *Agreement) Store() (int64, error) {

@@ -17,7 +17,7 @@ var conn *ldap.LDAPConnection
 
 func Connect(server string, port int, username string, password string, loglevel l.LogLevel) error {
 
-	l.Log("Connecting to LDAP...", l.InfoMessage)
+	l.Log(l.InfoMessage, "Connecting to LDAP...")
 
 	// The next block of code resolves the LDAP servers to one server.
 	ips, err := net.LookupIP(server)
@@ -50,12 +50,12 @@ func Connect(server string, port int, username string, password string, loglevel
 		return fmt.Errorf("Unable to bind to LDAP server at %v using credentials: %v", hostname, err)
 	}
 
-	l.Log("Successful LDAP connection and BIND", l.InfoMessage)
+	l.Log(l.InfoMessage, "Successful LDAP connection and BIND")
 	return nil
 }
 
 func Close() {
-	l.Log("Closing ldap connection...", l.TraceMessage)
+	l.Log(l.TraceMessage, "Closing ldap connection...")
 	conn.Close()
-	l.Log("Successfully closed ldap connection.", l.TraceMessage)	
+	l.Log(l.TraceMessage, "Successfully closed ldap connection.")	
 }
